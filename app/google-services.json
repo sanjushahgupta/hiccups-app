@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "56373630019",
+    "project_id": "hiccups-32b93",
+    "storage_bucket": "hiccups-32b93.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56373630019:android:a3811089fba2ecdc32f0f6",
+        "android_client_info": {
+          "package_name": "hicCups.p"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "56373630019-dkj1bh3h4nvp5qt5scqmkcr4273r9u96.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLKZpFGmd00lw8DJ2DqU3UIOeUfzLrY10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "56373630019-dkj1bh3h4nvp5qt5scqmkcr4273r9u96.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
