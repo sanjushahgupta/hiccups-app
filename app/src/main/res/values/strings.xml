@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">hicCups</string>
+    <string name="app_name">Hiccups</string>
+    <string name="Enterphonenumber">Enter phone number</string>
 </resources>
