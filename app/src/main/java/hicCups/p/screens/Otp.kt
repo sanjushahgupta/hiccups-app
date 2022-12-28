@@ -15,8 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,9 +22,11 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import hicCups.p.R
+import hicCups.p.forNotification.user
 import kotlinx.coroutines.delay
 
 
@@ -58,9 +58,9 @@ fun Otp(phonenumber: String, verificationcode: String, token: String, navControl
              val credential:PhoneAuthCredential = PhoneAuthProvider.getCredential(verificationcode,otpCode.value)
        Log.d("verifis", credential.toString())
             SignIn(credential, navController)
-            LaunchedEffect(Unit){
-                navController.navigate("home")
-            }
+         //   LaunchedEffect(Unit){
+             //   navController.navigate("home")
+           // }
         }
 
     }
@@ -71,19 +71,17 @@ fun Otp(phonenumber: String, verificationcode: String, token: String, navControl
 @Composable
 private fun SignIn(credential: PhoneAuthCredential, navController: NavController){
 val auth = Firebase.auth
-    val db = FirebaseFirestore.getInstance()
+   val db = FirebaseFirestore.getInstance()
     auth.signInWithCredential(credential).addOnSuccessListener {
 
         val phoneNumber = auth.currentUser!!.phoneNumber
         val uid = auth.currentUser!!.uid
-
-        if (phoneNumber != null) {
-
-            val user: MutableMap<String, Any> = HashMap()
+        val user: MutableMap<String, Any> = HashMap()
             user["uid"] = uid
-            user["phonenumber"] = phoneNumber
-            db.collection("users")
-                .add(user)
+            user["phonenumber"] = phoneNumber.toString()
+
+
+            db.collection("users").document(phoneNumber.toString()).set(user(uid, phoneNumber.toString()))
                 .addOnSuccessListener { documentReference ->
 
                         navController.navigate("home")
@@ -94,13 +92,11 @@ val auth = Firebase.auth
                 .addOnFailureListener { e -> Log.w(TAG, "Error adding document", e) }
 
 
-        }
+
 
     }
         .addOnFailureListener {
           Log.d("tag", "SignIn Failed")
-
-
         }
 
 }

@@ -31,9 +31,10 @@ class MainActivity : ComponentActivity() {
 
 
        val auth= FirebaseAuth.getInstance()
-        val ownUid = auth.uid
-       // val Topic = "$ownUid"
-        val Topic = "/topics/myTopic"
+        val ownUid = auth.currentUser?.uid
+        val Topic = "/topics/$ownUid"
+        Log.d("topics","$Topic")
+       // val Topic = "/topics/myTopic"
         FirebaseMessaging.getInstance().subscribeToTopic(Topic)
 
         setContent {
@@ -44,17 +45,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Login() {
-
     navigationNavController()
-    /*val db = FirebaseFirestore.getInstance()
-    val user: MutableMap<String, Any> = HashMap()
-    user["firstName"] = "Sam"
-    user["lastName"] = "Sah"
-
-    db.collection("users").add(user).addOnSuccessListener {
-
-    }.addOnFailureListener{}*/
-
 }
 
 @Preview(showBackground = true)
