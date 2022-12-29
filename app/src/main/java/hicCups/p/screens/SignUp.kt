@@ -103,54 +103,49 @@ fun SignUp(navController: NavController) {
         }
 
 
-   lateinit var callBacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
+        lateinit var callBacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
 
-    callBacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-        override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-            Log.d("GFG", "onVerificationCompleted Success")
+        callBacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                Log.d("GFG", "onVerificationCompleted Success")
 
 
+            }
+
+            override fun onVerificationFailed(e: FirebaseException) {
+                Log.d("GFG", "onVerificationFailed $e")
+
+
+            }
+
+            override fun onCodeSent(
+                VerificationId: String,
+                token: com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
+            )
+            {
+
+                super.onCodeSent(VerificationId, token)
+                val ide = VerificationId
+                val token = token
+                navController.navigate("otp/${phoneNumber.value}/$ide/$token")
+
+
+            }
         }
 
-        override fun onVerificationFailed(e: FirebaseException) {
-            Log.d("GFG", "onVerificationFailed $e")
 
-
-        }
-
-        override fun onCodeSent(
-            VerificationId: String,
-            token: com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
-        ) {
-
-            super.onCodeSent(VerificationId, token)
-            val ide = VerificationId
-            val token = token
-            navController.navigate("otp/${phoneNumber.value}/$ide/$token")
-
-
+        if (SignInButtonStatus.value) {
+            val auth = Firebase.auth
+            val options = PhoneAuthOptions.newBuilder(auth)
+                .setPhoneNumber(phoneNumber.value) // Phone number to verify
+                .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS) // Timeout and unit
+                .setActivity(getActivity(LocalContext.current)!!)// Activity (for callback binding)
+                .setCallbacks(callBacks) // OnVerificationStateChangedCallbacks
+                .build()
+            PhoneAuthProvider.verifyPhoneNumber(options)
         }
     }
-
-
-    if (SignInButtonStatus.value) {
-        val auth = Firebase.auth
-        val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(phoneNumber.value) // Phone number to verify
-            .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS) // Timeout and unit
-            .setActivity(getActivity(LocalContext.current)!!)// Activity (for callback binding)
-            .setCallbacks(callBacks) // OnVerificationStateChangedCallbacks
-            .build()
-        PhoneAuthProvider.verifyPhoneNumber(options)
-    }
 }
-}
-
-
-
-
-
-
 
 @Preview(showBackground = true)
 @Composable

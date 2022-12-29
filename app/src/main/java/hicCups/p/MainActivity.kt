@@ -34,7 +34,9 @@ class MainActivity : ComponentActivity() {
         val ownUid = auth.currentUser?.uid
         val Topic = "/topics/$ownUid"
         Log.d("topics","$Topic")
-       // val Topic = "/topics/myTopic"
+
+
+        // val Topic = "/topics/myTopic"
         FirebaseMessaging.getInstance().subscribeToTopic(Topic)
 
         setContent {
