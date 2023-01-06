@@ -64,18 +64,20 @@ fun getreceiverList() {
     db.collection("HiccupsDetails").get().addOnSuccessListener {
         it.documents.forEach {
            // if(it.get("Receiver").toString().equals(phon.toString())){
+            if (it.get("receiver").toString().equals(phon.toString())) {
+                var x = it.get("sender")
+                receiverList.add(x.toString())
+            }
 
-            var x = it.get("receiver")
-            var y = it.get("sender")
-            receiverList.add(x.toString())
-            senderList.add(y.toString())
+
 
         }
 
         receiverListState.value= receiverList.toString()
-        senderListState.value = senderList.toString()
 
     }
-    Text("Receiver  : ${receiverListState.value}")
-    Text("Sender : ${senderListState.value}")
+    Text("Received From")
+    Spacer(modifier = Modifier.padding(bottom = 25.dp))
+    Text("${receiverListState.value} ")
+
 }

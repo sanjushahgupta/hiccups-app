@@ -20,18 +20,19 @@ class hiccupsViewmodel: ViewModel() {
 
         db.collection("HiccupsDetails").get().addOnSuccessListener {
             it.documents.forEach {
-                //if(it.get("Receiver").toString().equals(phon.toString())){
+                if (it.get("Receiver").toString().equals(phon.toString())) {
 
-                var x = it.get("Receiver")
-              //  receiverList.add(x.toString())
-                newStringFromStoredData.add(x.toString())
+                    var x = it.get("Receiver")
+                    //  receiverList.add(x.toString())
+                    newStringFromStoredData.add(x.toString())
+
+
+                }
+                //    Log.d("hcv1", "$receiverList")
 
 
             }
-            //    Log.d("hcv1", "$receiverList")
-
 
         }
-
     }
 }

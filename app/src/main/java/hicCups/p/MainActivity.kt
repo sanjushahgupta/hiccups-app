@@ -28,17 +28,6 @@ import javax.security.auth.login.LoginException
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-       val auth= FirebaseAuth.getInstance()
-        val ownUid = auth.currentUser?.uid
-        val Topic = "/topics/$ownUid"
-        Log.d("topics","$Topic")
-
-
-        // val Topic = "/topics/myTopic"
-        FirebaseMessaging.getInstance().subscribeToTopic(Topic)
-
         setContent {
             Login() }
     }
