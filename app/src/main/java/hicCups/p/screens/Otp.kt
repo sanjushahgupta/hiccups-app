@@ -1,7 +1,6 @@
 package hicCups.p.screens
 
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -39,8 +38,9 @@ import hicCups.p.forNotification.user
 import hicCups.p.util.userPreference
 import kotlinx.coroutines.launch
 
-
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "CoroutineCreationDuringComposition",
+@SuppressLint(
+    "UnusedMaterialScaffoldPaddingParameter",
+    "CoroutineCreationDuringComposition",
     "SuspiciousIndentation"
 )
 @Composable
@@ -48,13 +48,13 @@ fun Otp(
     phonenumber: String,
     verificationcode: String,
     token: String,
-    name : String = "name",
+    name: String = "name",
     navController: NavController
 ) {
     val otpCode = remember { mutableStateOf("") }
     val submitButtonStatus = remember { mutableStateOf(false) }
     val focus = LocalFocusManager.current
-    val resendbuttonClick = remember {mutableStateOf(false)}
+    val resendbuttonClick = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -79,24 +79,24 @@ fun Otp(
 
 
         Row {
-            Button (onClick = {
-            submitButtonStatus.value = true
-            focus.clearFocus()
-        }) {
-            Text("Submit Opt")
-        }
+            Button(onClick = {
+                submitButtonStatus.value = true
+                focus.clearFocus()
+            }) {
+                Text("Submit Opt")
+            }
 
             Spacer(modifier = Modifier.padding(8.dp))
 
-            Text("Resend verification code", color = Color.Blue, modifier = Modifier.clickable(
-                onClick = {resendbuttonClick.value = true}
-            ))
-            if(resendbuttonClick.value){
-                resend(phonenumber, name, navController)
+            Text("Resend verification code",
+                color = Color.Blue,
+                modifier = Modifier.clickable(onClick = { resendbuttonClick.value = true }))
+            if (resendbuttonClick.value) {
+                ResendOtpCode(phonenumber, name, navController)
                 resendbuttonClick.value = false
             }
 
-    }
+        }
 
 
         if (submitButtonStatus.value) {
@@ -104,7 +104,7 @@ fun Otp(
             val credential: PhoneAuthCredential =
                 PhoneAuthProvider.getCredential(verificationcode, otpCode.value)
 
-       SignIn(credential, navController,name)
+            SignIn(credential, navController, name)
 
         }
 
@@ -112,11 +112,13 @@ fun Otp(
 }
 
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "CoroutineCreationDuringComposition",
+@SuppressLint(
+    "UnusedMaterialScaffoldPaddingParameter",
+    "CoroutineCreationDuringComposition",
     "SuspiciousIndentation"
 )
 @Composable
-private fun SignIn(credential: PhoneAuthCredential, navController: NavController, name:String) {
+fun SignIn(credential: PhoneAuthCredential, navController: NavController, name: String) {
 
     val auth = Firebase.auth
     val errorToast = remember {
@@ -137,7 +139,7 @@ private fun SignIn(credential: PhoneAuthCredential, navController: NavController
 
 
         db.collection("users").document(phoneNumber.toString())
-            .set(user(uid, phoneNumber.toString(),name))
+            .set(user(uid, phoneNumber.toString(), name))
             .addOnSuccessListener { documentReference ->
 
 
@@ -150,16 +152,15 @@ private fun SignIn(credential: PhoneAuthCredential, navController: NavController
 
             .addOnFailureListener {
                 errorToast.value = true
-                     }
+            }
 
 
-    }
-        .addOnFailureListener {
+    }.addOnFailureListener {
 
             errorToast.value = true
         }
 
-    if (errorToast.value){
+    if (errorToast.value) {
         Toast.makeText(LocalContext.current, "", Toast.LENGTH_SHORT).show()
     }
 
@@ -168,9 +169,7 @@ private fun SignIn(credential: PhoneAuthCredential, navController: NavController
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun resend(phonenumber: String, name: String, navController: NavController){
-
-
+fun ResendOtpCode(phonenumber: String, name: String, navController: NavController) {
     lateinit var callBacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
     val errorToast = remember {
         mutableStateOf(false)
@@ -202,7 +201,7 @@ fun resend(phonenumber: String, name: String, navController: NavController){
             super.onCodeSent(VerificationId, token)
             val ide = VerificationId
             val token = token
-        //    navController.navigate("otp/${phonenumber}/$ide/$token/${name}")
+            //    navController.navigate("otp/${phonenumber}/$ide/$token/${name}")
 
 
         }
@@ -212,16 +211,17 @@ fun resend(phonenumber: String, name: String, navController: NavController){
         sendOptToast.value = false
     }
     if (sendOptToast.value) {
-        Toast.makeText(LocalContext.current, "An sms is sent to ${phonenumber}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(LocalContext.current, "An sms is sent to ${phonenumber}", Toast.LENGTH_SHORT)
+            .show()
         sendOptToast.value = false
     }
 
-        val auth = Firebase.auth
-        val options = PhoneAuthOptions.newBuilder(auth)
-            .setPhoneNumber(phonenumber) // Phone number to verify
+    val auth = Firebase.auth
+    val options =
+        PhoneAuthOptions.newBuilder(auth).setPhoneNumber(phonenumber) // Phone number to verify
             .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS) // Timeout and unit
             .setActivity(ContextUtils.getActivity(LocalContext.current)!!)// Activity (for callback binding)
             .setCallbacks(callBacks) // OnVerificationStateChangedCallbacks
             .build()
-        PhoneAuthProvider.verifyPhoneNumber(options)
-    }
+    PhoneAuthProvider.verifyPhoneNumber(options)
+}
