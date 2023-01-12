@@ -26,23 +26,22 @@ var hiccupsViewmodel= hiccupsViewmodel()
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            contentColor = Color.Black,
-            backgroundColor = Color(176, 104, 187, 255)
+            backgroundColor = Color.DarkGray
 
         ) {
-            Text(text = "Hiccups", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(text = "Hiccups", fontSize = 18.sp, color =colorResource(id = R.color.LogiTint))
 
         }
     }) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colorResource(id = R.color.backgroundColor)),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Color.White),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
 
-           hiccupsViewmodel.ReceivedDetailsListFromFirebaseDB()
+           hiccupsViewmodel.FetchSenderDataFromFireBaseDB()
 
         }
         }

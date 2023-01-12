@@ -3,7 +3,6 @@ package hicCups.p.screens
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,15 +12,12 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,10 +32,6 @@ import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import hicCups.p.R
-import hicCups.p.util.userPreference
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 @SuppressLint("RestrictedApi", "CoroutineCreationDuringComposition")
@@ -56,15 +48,20 @@ fun SignUp(navController: NavController) {
         TopAppBar(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            contentColor = Color.Black,
-            backgroundColor = Color(176, 104, 187, 255)
-
+                .height(80.dp),
+            backgroundColor = Color.DarkGray
         ) {
-            Text(text = "Hiccups", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(
+                text = "Hiccups",
+                modifier = Modifier.padding(start = 20.dp),
+                fontSize = 50.sp,
+                color = colorResource(id = R.color.LogiTint)
+            )
 
         }
-    }) {
+    })
+    {
+
         Column(
             modifier = Modifier
                 .clickable(
@@ -72,55 +69,73 @@ fun SignUp(navController: NavController) {
                     indication = null,
                     onClick = { focus.clearFocus() })
                 .fillMaxSize()
-                .background(colorResource(id = R.color.backgroundColor)),
+                .background(Color.DarkGray),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.padding(top = 60.dp))
-            Image(
-                painter = painterResource(id = R.drawable.missing),
-                contentDescription = "hiccupsIcon",
-                modifier = Modifier
-                    .height(50.dp)
-                    .width(70.dp)
 
-            )
-            Spacer(modifier = Modifier.padding(top = 10.dp))
-            OutlinedTextField(
-                value = phoneNumber.value,
-                onValueChange = { phoneNumber.value = it.toString() },
-                placeholder = ({ Text("Phonenumber with country code") }),
-                modifier = Modifier.wrapContentSize(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-
-                )
-            Spacer(modifier = Modifier.padding(top = 10.dp))
-            OutlinedTextField(
-                value = name.value,
-                onValueChange = { name.value = it.toString() },
-                placeholder = ({ Text("Enter your name") }),
-                modifier = Modifier.wrapContentSize(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-
-                )
-
-            Button(
-                onClick = {
-                    SignInButtonStatus.value = true
-                    focus.clearFocus()
-                    Log.d("GFG", "Button clicked")
-                },
-                modifier = Modifier.padding(top = 15.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.purple_700))
-
+            Card(
+                backgroundColor = Color.White, modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp, top = 30.dp)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.42f)
             ) {
-                Text(text = "Sign In")
+                Column(
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    OutlinedTextField(
+                        value = phoneNumber.value,
+                        onValueChange = { phoneNumber.value = it },
+                        placeholder = ({
+                            Text(
+                                "Phonenumber with country code",
+                                color = Color.Gray
+                            )
+                        }),
+                        modifier = Modifier.wrapContentSize(),
+                        // colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+
+                        )
+
+                    Spacer(modifier = Modifier.padding(top = 10.dp))
+                    OutlinedTextField(
+                        value = name.value,
+                        onValueChange = { name.value = it.toString() },
+                        placeholder = ({
+                            Text(
+                                "Enter your name",
+                                color = Color.Gray,
+
+                                )
+                        }),
+                        modifier = Modifier.wrapContentSize(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+
+                        )
+
+                    Button(
+                        onClick = {
+                            SignInButtonStatus.value = true
+                            focus.clearFocus()
+                            Log.d("GFG", "Button clicked")
+                        },
+                        modifier = Modifier
+                            .padding(start = 15.dp, end = 15.dp, top = 15.dp)
+                            .fillMaxWidth(),
+
+                        colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.LogiTint))
+
+                    ) {
+                        Text(text = "Sign In", color = Color.White, fontSize = 15.sp)
+                    }
+                }
             }
         }
-
-
         lateinit var callBacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
         val errorToast = remember {
             mutableStateOf(false)
@@ -163,7 +178,11 @@ fun SignUp(navController: NavController) {
             sendOptToast.value = false
         }
         if (sendOptToast.value) {
-            Toast.makeText(LocalContext.current, "An sms is sent to ${phoneNumber.value}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                LocalContext.current,
+                "An sms is sent to ${phoneNumber.value}",
+                Toast.LENGTH_SHORT
+            ).show()
             sendOptToast.value = false
         }
 
@@ -173,11 +192,15 @@ fun SignUp(navController: NavController) {
             phoneNumber.value = phoneNumber.value.replace("\\s".toRegex(), "")
             if (phoneNumber.value.isEmpty()) {
 
-                Toast.makeText(LocalContext.current, "Please enter your phone number.", Toast.LENGTH_SHORT)
+                Toast.makeText(
+                    LocalContext.current,
+                    "Please enter your phone number.",
+                    Toast.LENGTH_SHORT
+                )
                     .show()
                 SignInButtonStatus.value = false
 
-            }else {
+            } else {
                 val auth = Firebase.auth
                 val options = PhoneAuthOptions.newBuilder(auth)
                     .setPhoneNumber(phoneNumber.value) // Phone number to verify

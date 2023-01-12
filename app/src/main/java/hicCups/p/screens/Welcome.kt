@@ -38,7 +38,7 @@ fun Welcome(navController: NavController) {
         dataStore.loginStatus.collect {
             val token = it.toString()
             async {
-                delay(2000)
+                delay(600)
                 if (token.equals("loggedIn")) {
                     navController.navigate("home")
                 } else {

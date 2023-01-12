@@ -3,6 +3,7 @@ package hicCups.p.screens
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -58,6 +59,7 @@ fun Otp(
 
     Column(
         modifier = Modifier
+            .background(Color.Blue)
             .clickable(
                 MutableInteractionSource(),
                 indication = null,

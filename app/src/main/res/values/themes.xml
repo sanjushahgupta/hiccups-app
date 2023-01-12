@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.HicCups" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.HicCups" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">#00838f</item>
-        <item name="colorPrimaryVariant">#8f5db7</item>
-        <item name="colorOnPrimary">#8f5db7</item>
+        <item name="colorPrimaryVariant">#6c757d</item>
+        <item name="colorOnPrimary">#6c757d</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">#1976d2</item>
         <item name="colorSecondaryVariant">#63a4ff</item>

@@ -1,35 +1,40 @@
 package hicCups.p.screens
 
 import android.annotation.SuppressLint
-import android.content.ContentResolver
-import android.database.Cursor
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import hicCups.p.R
 import hicCups.p.hiccupsViewmodel.hiccupsViewmodel
-import hicCups.p.util.userPreference
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint(
@@ -41,109 +46,219 @@ import hicCups.p.util.userPreference
 
 @Composable
 fun Home(navController: NavController) {
+    val focus = LocalFocusManager.current
 
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dataStore = userPreference(context)
-    val hiccupsViewmodel = hiccupsViewmodel()
-
-
-    var focus = LocalFocusManager.current
     Scaffold(topBar = {
         TopAppBar(
             modifier = Modifier
-                .height(30.dp)
-                .fillMaxSize()
+                .wrapContentHeight()
+                .wrapContentHeight(),
+            backgroundColor = Color.DarkGray
+
         ) {
 
             var expanded = remember { mutableStateOf(false) }
-            Text(text = "Hiccups")
-            Spacer(modifier = Modifier.padding(start = 250.dp))
+            Text(
+                text = "Hiccups",
+                color = colorResource(id = R.color.LogiTint),
+                fontSize = 20.sp,
+                modifier = Modifier.padding(top = 10.dp, start = 20.dp)
+            )
+            Spacer(modifier = Modifier.padding(start = 200.dp))
             IconButton(onClick = { expanded.value = true }) {
                 if (expanded.value) {
                     navController.navigate("receivedetails")
                     expanded.value = false
 
                 }
-                Column {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_baseline_call_received_24),
-                        ""
-                    )
-                    Icon(painter = painterResource(id = R.drawable.ic_baseline_receipt_24), "")
-                }
-
-
+                Icon(
+                    painter = painterResource(id = R.drawable.sentlisthiccups),
+                    "",
+                    tint = colorResource(
+                        id = R.color.LogiTint
+                    ),
+                    modifier = Modifier.size(30.dp)
+                )
             }
         }
     }) {
-        Column(
+        Box(
             modifier = Modifier
-                .clickable(
-                    MutableInteractionSource(),
-                    indication = null,
-                    onClick = { focus.clearFocus() })
                 .fillMaxSize()
-                .padding(bottom = 18.dp, start = 18.dp, end = 18.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Color.White)
         ) {
-            val send = remember { mutableStateOf(false) }
+            Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top) {
+                Image(
+                    painter = painterResource(id = R.drawable.missing),
+                    contentDescription = "hiccups image",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .padding(top = 10.dp, start = 20.dp)
+                )
 
-
-            val auth = FirebaseAuth.getInstance()
-            Image(
-                painter = painterResource(id = R.drawable.missing),
-                contentDescription = "hiccups image",
-                modifier = Modifier.size(40.dp)
-            )
-            Text("Are you missing anyone?")
-
-
-            var enterPhoneNumber = remember { mutableStateOf("") }
-            OutlinedTextField(
-                value = enterPhoneNumber.value,
-                onValueChange = { enterPhoneNumber.value = it },
-                placeholder = { Text(text = "Enter Phone number") },
-                modifier = Modifier.wrapContentSize())
-
-            val senderPhone = auth.currentUser?.phoneNumber
-
-            Button(onClick = {
-                send.value = true
-                focus.clearFocus()
-            }) {
-                Text(text = "Send Hiccup")
-
+                Text(
+                    "Are you missing anyone?",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(top = 30.dp, start = 10.dp),
+                    color = colorResource(id = R.color.LogiTint)
+                )
             }
+            Column(
+                modifier = Modifier
+                    .clickable(
+                        MutableInteractionSource(),
+                        indication = null,
+                        onClick = { focus.clearFocus() })
+                    .fillMaxSize()
+                    .padding(bottom = 18.dp, start = 18.dp, end = 18.dp, top = 70.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            Text(text = "Recently Sent", fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-
-           hiccupsViewmodel.FetchSenderDataFromFireBaseDB()
-
-            if (send.value) {
-                if (enterPhoneNumber.value.isEmpty()) {
-                    Toast.makeText(LocalContext.current, "Invalid input", Toast.LENGTH_SHORT).show()
-                } else {
-                    enterPhoneNumber.value = enterPhoneNumber.value.replace("\\s".toRegex(), "")
-
-                    if (enterPhoneNumber.value == senderPhone) {
-                        Toast.makeText(
-                            LocalContext.current,
-                            "$enterPhoneNumber.value",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        send.value = false
-                    } else {
-                        hiccupsViewmodel.sendHiccups(enterPhoneNumber.value)
-                        send.value = false
-                    }
+                Spacer(modifier = Modifier.padding(8.dp))
+                Column(
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    UIWithContact()
                 }
+
             }
 
         }
 
     }
+
+}
+
+@SuppressLint("SuspiciousIndentation")
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview()
+@Composable
+fun UIWithContact() {
+    val context = LocalContext.current
+    var phoneNumber = remember { mutableStateOf("") }
+    val focus = LocalFocusManager.current
+
+    //create a intent variable
+    val contactIntent = Intent(Intent.ACTION_PICK).apply {
+        type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
+    }
+
+    val launchContactForResult = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+            val contactUri: Uri? = result.data?.data
+
+            val projection: Array<String> = arrayOf(
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+            )
+
+            contactUri?.let {
+                context.contentResolver.query(it, projection, null, null, null).use { cursor ->
+                    // If the cursor returned is valid, get the phone number and (or) name
+                    if (cursor!!.moveToFirst()) {
+                        val numberIndex =
+                            cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                        phoneNumber.value = cursor.getString(numberIndex)
+
+                    }
+                }
+            }
+        }
+    }
+
+    val launchContactPermission = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchContactForResult.launch(contactIntent)
+        } else {
+            Toast.makeText(context, "Permission Denied!", Toast.LENGTH_SHORT)
+                .show()
+        }
+
+    }
+
+    OutlinedTextField(
+        value = phoneNumber.value,
+        onValueChange = { phoneNumber.value = it },
+        trailingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_baseline_import_contacts_24),
+                contentDescription = "import contacts", tint = colorResource(id = R.color.LogiTint),
+                modifier = Modifier.clickable {
+                    when (PackageManager.PERMISSION_GRANTED) {
+                        //First time asking for permission ... to be granted by user
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            android.Manifest.permission.READ_CONTACTS
+                        ) -> {
+                            launchContactForResult.launch(contactIntent)
+                        }
+                        else -> {
+                            //If permission has been already granted
+                            launchContactPermission.launch(android.Manifest.permission.READ_CONTACTS)
+                        }
+                    }
+                }
+            )
+        },
+
+        placeholder = {
+            Text(
+                text = "Enter Phone number",
+                color = colorResource(id = R.color.LogiTint)
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
+
+
+    val send = remember { mutableStateOf(false) }
+    val auth = FirebaseAuth.getInstance()
+    val senderPhone = auth.currentUser?.phoneNumber
+    val hiccupsViewmodel = hiccupsViewmodel()
+
+    Spacer(modifier = Modifier.padding(4.dp))
+
+    Box(contentAlignment = Alignment.Center) {
+        Button(
+            onClick = {
+                send.value = true
+                focus.clearFocus()
+            },
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+            modifier = Modifier.padding(start = 80.dp),
+        ) {
+            Text(text = "Send Hiccup", color = colorResource(id = R.color.LogiTint))
+        }
+    }
+    if (send.value) {
+        if (phoneNumber.value.isEmpty()) {
+            Toast.makeText(LocalContext.current, "Invalid input", Toast.LENGTH_SHORT).show()
+        } else {
+            phoneNumber.value = phoneNumber.value.replace("\\s".toRegex(), "")
+
+            if (phoneNumber.value == senderPhone) {
+                Toast.makeText(
+                    LocalContext.current,
+                    "You cannot send yourself hiccups.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                send.value = false
+            } else {
+
+                hiccupsViewmodel.sendHiccups(phoneNumber.value, context)
+                send.value = false
+            }
+        }
+    }
+
+    hiccupsViewmodel.ReceivedDetailsListFromFirebaseDB()
 
 }
