@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import java.util.*
 
 class hiccupsViewmodel : ViewModel() {
 
@@ -41,20 +42,25 @@ class hiccupsViewmodel : ViewModel() {
             val db = FirebaseFirestore.getInstance()
             val auth = FirebaseAuth.getInstance()
             val senderPhone = auth.currentUser?.phoneNumber
+
             db.collection("users").document(senderPhone.toString()).get().addOnSuccessListener {
                 var senderName = ""
                 if (it.exists()) {
                     senderName = it.get("name").toString()
+                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                 }
 
                 db.collection("users").document(receiverPhoneNumber).get().addOnSuccessListener {
                     if (it.exists()) {
                         var receiveruid = it.get("uid").toString()
+                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                        var ReceiverName = it.get("name").toString()
+                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
                         Log.d("receiveruid", receiveruid)
 
                         val TOPIC = "/topics/$receiveruid"
-
+                        Toast.makeText(context, "Hiccup sent.", Toast.LENGTH_SHORT).show()
                         CoroutineScope(Dispatchers.IO).launch {
                             PushNotification(
                                 NotificationData("Hiccups", "You are on $senderName's mind"), TOPIC
@@ -66,10 +72,14 @@ class hiccupsViewmodel : ViewModel() {
                                     val DateandTime = LocalDateTime.now().toString()
 
                                     if (response.isSuccessful) {
+
                                         addToFirebaseHiccupsDetails(
-                                            senderPhone.toString(), receiverPhoneNumber, DateandTime
+                                            senderPhone.toString(),
+                                            receiverPhoneNumber,
+                                            DateandTime,
+                                            senderName,
+                                            ReceiverName
                                         )
-                                        Toast.makeText(context, "hkj", Toast.LENGTH_SHORT).show()
 
                                     } else {
                                         Toast.makeText(context, "hvbj", Toast.LENGTH_SHORT).show()
@@ -93,18 +103,19 @@ class hiccupsViewmodel : ViewModel() {
 
         }
 
-    fun addToFirebaseHiccupsDetails(sender: String, receiver: String, DateandTime: String) {
+    fun addToFirebaseHiccupsDetails(
+        sender: String,
+        receiver: String,
+        DateandTime: String,
+        senderName: String,
+        receiverName: String
+    ) {
 
         val db = FirebaseFirestore.getInstance()
 
 
-//    val phoneNumber = auth.currentUser!!.phoneNumber
-//    val uid = auth.currentUser!!.uid
-        //  val user: MutableMap<String, Any> = HashMap()
-        //  user["uid"] = uid
-        //  user["phonenumber"] = phoneNumber.toString()
-
-        db.collection("HiccupsDetails").add(HiccupsDetails(sender, receiver, DateandTime))
+        db.collection("HiccupsDetails")
+            .add(HiccupsDetails(sender, receiver, DateandTime, senderName, receiverName))
             .addOnSuccessListener { documentReference ->
 
                 Log.d("tag", "added ")
@@ -114,6 +125,8 @@ class hiccupsViewmodel : ViewModel() {
 
 
     }
+
+
 
     @SuppressLint("CoroutineCreationDuringComposition", "MutableCollectionMutableState")
     @Composable
@@ -133,10 +146,12 @@ class hiccupsViewmodel : ViewModel() {
 
 
                         var y = it.get("receiver")
+                        var receiver_name = it.get("receiverName").toString()
+                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                         var dateTime = it.get("dateandTime").toString()
                         dateTime = dateTime.substring(0, 10) + "  " + dateTime.subSequence(11, 19)
 
-                        senderList.add("  " + y.toString() + "\n" + "  " + dateTime)
+                        senderList.add("  " + y.toString() + " (" + receiver_name + ")" + "\n" + "  " + dateTime)
 
                     }
                     senderListState.value = senderList
@@ -162,7 +177,7 @@ class hiccupsViewmodel : ViewModel() {
                     text = "Sent hiccups: ",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(top = 10.dp, start = 10.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(top = 10.dp, start = 10.dp, bottom = 3.dp)
                 )
             }
         }
@@ -174,7 +189,7 @@ class hiccupsViewmodel : ViewModel() {
 
                 if (it.isNotEmpty()) {
                     Text(
-                        text = it, modifier = Modifier.padding(all = 5.dp)
+                        text = it, modifier = Modifier.padding(start = 5.dp, bottom = 8.dp)
                     )
                     Divider()
 
@@ -205,9 +220,10 @@ class hiccupsViewmodel : ViewModel() {
                     if (it.get("receiver").toString().equals(phon.toString())) {
                         var number = it.get("sender").toString()
                         var dateTime = it.get("dateandTime").toString()
+                        var senderName = it.get("senderName").toString()
 
                         receiverList.add(
-                            number + "\n" + dateTime.substring(
+                            number + " (" + senderName + ")" + "\n" + dateTime.substring(
                                 0, 10
                             ) + "  " + dateTime.substring(11, 19)
                         )
@@ -251,4 +267,5 @@ class hiccupsViewmodel : ViewModel() {
             Spacer(modifier = Modifier.padding(top = 15.dp))
         }
     }
+
 }

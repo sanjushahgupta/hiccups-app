@@ -36,11 +36,13 @@ fun navigationNavController() {
         }
 
         composable("otp/{phonenumber}/{verificationCode}/{token}/{name}") {
-            Otp(it.arguments?.getString("phonenumber").toString(),
+            Otp(
+                it.arguments?.getString("phonenumber").toString(),
                 it.arguments?.getString("verificationCode").toString(),
                 it.arguments?.getString("token").toString(),
                 it.arguments?.getString("name").toString(),
-                navController = navController)
+                navController = navController
+            )
             BackHandler() {
             }
         }

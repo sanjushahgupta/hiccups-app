@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,59 +59,71 @@ fun Home(navController: NavController) {
         ) {
 
             var expanded = remember { mutableStateOf(false) }
+
+            Image(
+                painter = painterResource(id = R.drawable.missing),
+                contentDescription = "hiccups image",
+                modifier = Modifier
+                    .size(50.dp)
+                    .padding(top = 5.dp, start = 16.dp)
+            )
             Text(
                 text = "Hiccups",
                 color = colorResource(id = R.color.LogiTint),
-                fontSize = 20.sp,
-                modifier = Modifier.padding(top = 10.dp, start = 20.dp)
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 20.dp)
             )
-            Spacer(modifier = Modifier.padding(start = 200.dp))
-            IconButton(onClick = { expanded.value = true }) {
-                if (expanded.value) {
-                    navController.navigate("receivedetails")
-                    expanded.value = false
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(onClick = { expanded.value = true }) {
+                    if (expanded.value) {
+                        navController.navigate("receivedetails")
+                        expanded.value = false
+
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.sentlisthiccups),
+                        "",
+                        tint = colorResource(
+                            id = R.color.LogiTint
+                        ),
+                        modifier = Modifier.size(30.dp)
+                    )
                 }
-                Icon(
-                    painter = painterResource(id = R.drawable.sentlisthiccups),
-                    "",
-                    tint = colorResource(
-                        id = R.color.LogiTint
-                    ),
-                    modifier = Modifier.size(30.dp)
-                )
             }
         }
     }) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .padding(top = 40.dp)
+                .background(Color.White),
+            Alignment.TopCenter
         ) {
-            Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.Top) {
-                Image(
-                    painter = painterResource(id = R.drawable.missing),
-                    contentDescription = "hiccups image",
-                    modifier = Modifier
-                        .size(60.dp)
-                        .padding(top = 10.dp, start = 20.dp)
-                )
 
-                Text(
-                    "Are you missing anyone?",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(top = 30.dp, start = 10.dp),
-                    color = colorResource(id = R.color.LogiTint)
-                )
-            }
+
+            Text(
+                "Are you missing anyone?",
+                fontSize = 18.sp,
+                modifier = Modifier.padding(top = 30.dp, start = 20.dp),
+                color = colorResource(id = R.color.LogiTint)
+            )
+
+
+
             Column(
                 modifier = Modifier
-                    .clickable(
-                        MutableInteractionSource(),
+                    .clickable(MutableInteractionSource(),
                         indication = null,
                         onClick = { focus.clearFocus() })
                     .fillMaxSize()
-                    .padding(bottom = 18.dp, start = 18.dp, end = 18.dp, top = 70.dp),
+                    .padding(bottom = 18.dp, start = 18.dp, end = 18.dp, top = 60.dp),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -118,8 +131,7 @@ fun Home(navController: NavController) {
 
                 Spacer(modifier = Modifier.padding(8.dp))
                 Column(
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.Start
+                    verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.Start
                 ) {
                     UIWithContact()
                 }
@@ -178,25 +190,22 @@ fun UIWithContact() {
         if (isGranted) {
             launchContactForResult.launch(contactIntent)
         } else {
-            Toast.makeText(context, "Permission Denied!", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(context, "Permission Denied!", Toast.LENGTH_SHORT).show()
         }
 
     }
 
-    OutlinedTextField(
-        value = phoneNumber.value,
+    OutlinedTextField(value = phoneNumber.value,
         onValueChange = { phoneNumber.value = it },
         trailingIcon = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_baseline_import_contacts_24),
-                contentDescription = "import contacts", tint = colorResource(id = R.color.LogiTint),
+            Icon(painter = painterResource(id = R.drawable.ic_baseline_import_contacts_24),
+                contentDescription = "import contacts",
+                tint = colorResource(id = R.color.LogiTint),
                 modifier = Modifier.clickable {
                     when (PackageManager.PERMISSION_GRANTED) {
                         //First time asking for permission ... to be granted by user
                         ContextCompat.checkSelfPermission(
-                            context,
-                            android.Manifest.permission.READ_CONTACTS
+                            context, android.Manifest.permission.READ_CONTACTS
                         ) -> {
                             launchContactForResult.launch(contactIntent)
                         }
@@ -205,14 +214,12 @@ fun UIWithContact() {
                             launchContactPermission.launch(android.Manifest.permission.READ_CONTACTS)
                         }
                     }
-                }
-            )
+                })
         },
-
+        colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black, backgroundColor = Color.White, focusedIndicatorColor = Color.LightGray),
         placeholder = {
             Text(
-                text = "Enter Phone number",
-                color = colorResource(id = R.color.LogiTint)
+                text = "Enter Phone number", color = colorResource(id = R.color.LogiTint)
             )
         },
         modifier = Modifier.fillMaxWidth()
@@ -226,7 +233,7 @@ fun UIWithContact() {
 
     Spacer(modifier = Modifier.padding(4.dp))
 
-    Box(contentAlignment = Alignment.Center) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Button(
             onClick = {
                 send.value = true
@@ -246,9 +253,7 @@ fun UIWithContact() {
 
             if (phoneNumber.value == senderPhone) {
                 Toast.makeText(
-                    LocalContext.current,
-                    "You cannot send yourself hiccups.",
-                    Toast.LENGTH_SHORT
+                    LocalContext.current, "You cannot send yourself hiccups.", Toast.LENGTH_SHORT
                 ).show()
                 send.value = false
             } else {

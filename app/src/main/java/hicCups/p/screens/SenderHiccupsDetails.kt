@@ -10,12 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import hicCups.p.R
-import hicCups.p.forNotification.HiccupsDetails
 import hicCups.p.hiccupsViewmodel.hiccupsViewmodel
 
 @Composable
@@ -29,7 +27,7 @@ var hiccupsViewmodel= hiccupsViewmodel()
             backgroundColor = Color.DarkGray
 
         ) {
-            Text(text = "Hiccups", fontSize = 18.sp, color =colorResource(id = R.color.LogiTint))
+            Text(text = "Hiccups", fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp) ,color =colorResource(id = R.color.LogiTint))
 
         }
     }) {
@@ -46,3 +44,4 @@ var hiccupsViewmodel= hiccupsViewmodel()
         }
         }
 }
+//	+49 1575 8740660

@@ -15,6 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Transparent
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
@@ -54,7 +56,7 @@ fun SignUp(navController: NavController) {
             Text(
                 text = "Hiccups",
                 modifier = Modifier.padding(start = 20.dp),
-                fontSize = 50.sp,
+                fontSize = 30.sp,
                 color = colorResource(id = R.color.LogiTint)
             )
 
@@ -76,7 +78,7 @@ fun SignUp(navController: NavController) {
 
             Card(
                 backgroundColor = Color.White, modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, top = 30.dp)
+                    .padding(start = 20.dp, end = 20.dp, top = 40.dp)
                     .fillMaxWidth()
                     .fillMaxHeight(0.42f)
             ) {
@@ -95,7 +97,7 @@ fun SignUp(navController: NavController) {
                             )
                         }),
                         modifier = Modifier.wrapContentSize(),
-                        // colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black),
+                        colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black, backgroundColor = Color.White, focusedIndicatorColor = Color.LightGray),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
 
@@ -114,6 +116,7 @@ fun SignUp(navController: NavController) {
                         }),
                         modifier = Modifier.wrapContentSize(),
                         singleLine = true,
+                        colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black, backgroundColor = Color.White, focusedIndicatorColor = Color.LightGray),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
 
                         )

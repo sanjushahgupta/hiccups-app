@@ -8,9 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,9 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.fontResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -44,14 +45,10 @@ import kotlinx.coroutines.launch
     "CoroutineCreationDuringComposition",
     "SuspiciousIndentation"
 )
+
 @Composable
-fun Otp(
-    phonenumber: String,
-    verificationcode: String,
-    token: String,
-    name: String = "name",
-    navController: NavController
-) {
+fun Otp(phonenumber: String, verificationcode: String, token: String, name: String, navController: NavController) {
+
     val otpCode = remember { mutableStateOf("") }
     val submitButtonStatus = remember { mutableStateOf(false) }
     val focus = LocalFocusManager.current
@@ -59,42 +56,48 @@ fun Otp(
 
     Column(
         modifier = Modifier
+            .fillMaxWidth()
             .background(Color.Blue)
             .clickable(
                 MutableInteractionSource(),
                 indication = null,
                 onClick = { focus.clearFocus() })
             .fillMaxSize()
+            .background(Color.White)
             .padding(bottom = 18.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Verification Code", fontSize = 15.sp, fontWeight = FontWeight.Bold)
 
         OutlinedTextField(
             value = otpCode.value,
             onValueChange = { otpCode.value = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            placeholder = ({ stringResource(R.string.Enterphonenumber) })
+            placeholder ={ Text(text = "Enter otp code")},
+            colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black, backgroundColor = Color.White, focusedIndicatorColor = Color.LightGray),
+            modifier = Modifier.padding(bottom = 20.dp)
 
-        )
 
+            )
 
-        Row {
+        Row(horizontalArrangement = Arrangement.SpaceBetween) {
             Button(onClick = {
                 submitButtonStatus.value = true
                 focus.clearFocus()
-            }) {
-                Text("Submit Opt")
+            },
+                colors = ButtonDefaults.buttonColors(Color.White)
+            ) {
+                Text("Submit Opt",color = colorResource(id = R.color.LogiTint))
             }
 
             Spacer(modifier = Modifier.padding(8.dp))
 
             Text("Resend verification code",
-                color = Color.Blue,
-                modifier = Modifier.clickable(onClick = { resendbuttonClick.value = true }))
+                fontWeight = FontWeight.Bold,
+                color = Color.DarkGray,
+                modifier = Modifier.padding(bottom = 12.dp, top = 8.dp).clickable(onClick = { resendbuttonClick.value = true }))
             if (resendbuttonClick.value) {
-                ResendOtpCode(phonenumber, name, navController)
+               ResendOtpCode(phonenumber, name, navController)
                 resendbuttonClick.value = false
             }
 
@@ -106,7 +109,7 @@ fun Otp(
             val credential: PhoneAuthCredential =
                 PhoneAuthProvider.getCredential(verificationcode, otpCode.value)
 
-            SignIn(credential, navController, name)
+           SignIn(credential, navController, name)
 
         }
 
@@ -203,7 +206,7 @@ fun ResendOtpCode(phonenumber: String, name: String, navController: NavControlle
             super.onCodeSent(VerificationId, token)
             val ide = VerificationId
             val token = token
-            //    navController.navigate("otp/${phonenumber}/$ide/$token/${name}")
+             navController.navigate("otp/${phonenumber}/$ide/$token/${name}")
 
 
         }
