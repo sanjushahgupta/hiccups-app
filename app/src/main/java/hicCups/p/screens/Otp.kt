@@ -19,24 +19,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.fontResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.google.android.material.internal.ContextUtils
-import com.google.firebase.FirebaseException
 import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import hicCups.p.R
 import hicCups.p.forNotification.user
+import hicCups.p.hiccupsViewmodel.hiccupsViewmodel
 import hicCups.p.util.userPreference
 import kotlinx.coroutines.launch
 
@@ -47,12 +41,20 @@ import kotlinx.coroutines.launch
 )
 
 @Composable
-fun Otp(phonenumber: String, verificationcode: String, token: String, name: String, navController: NavController) {
+fun Otp(
+    phonenumber: String,
+    verificationcode: String,
+    token: String,
+    name: String,
+    navController: NavController
+) {
 
     val otpCode = remember { mutableStateOf("") }
     val submitButtonStatus = remember { mutableStateOf(false) }
     val focus = LocalFocusManager.current
     val resendbuttonClick = remember { mutableStateOf(false) }
+    val hiccupsViewmodel = hiccupsViewmodel()
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -73,21 +75,26 @@ fun Otp(phonenumber: String, verificationcode: String, token: String, name: Stri
             value = otpCode.value,
             onValueChange = { otpCode.value = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            placeholder ={ Text(text = "Enter otp code")},
-            colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black, backgroundColor = Color.White, focusedIndicatorColor = Color.LightGray),
+            placeholder = { Text(text = "Enter otp code") },
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = Color.Black,
+                backgroundColor = Color.White,
+                focusedIndicatorColor = Color.LightGray
+            ),
             modifier = Modifier.padding(bottom = 20.dp)
 
 
-            )
+        )
 
         Row(horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(onClick = {
-                submitButtonStatus.value = true
-                focus.clearFocus()
-            },
+            Button(
+                onClick = {
+                    submitButtonStatus.value = true
+                    focus.clearFocus()
+                },
                 colors = ButtonDefaults.buttonColors(Color.White)
             ) {
-                Text("Submit Opt",color = colorResource(id = R.color.LogiTint))
+                Text("Submit Opt", color = colorResource(id = R.color.LogiTint))
             }
 
             Spacer(modifier = Modifier.padding(8.dp))
@@ -95,9 +102,12 @@ fun Otp(phonenumber: String, verificationcode: String, token: String, name: Stri
             Text("Resend verification code",
                 fontWeight = FontWeight.Bold,
                 color = Color.DarkGray,
-                modifier = Modifier.padding(bottom = 12.dp, top = 8.dp).clickable(onClick = { resendbuttonClick.value = true }))
+                modifier = Modifier
+                    .padding(bottom = 12.dp, top = 8.dp)
+                    .clickable(onClick = { resendbuttonClick.value = true })
+            )
             if (resendbuttonClick.value) {
-               ResendOtpCode(phonenumber, name, navController)
+                hiccupsViewmodel.generateOtpCodeForSignUp(phonenumber, name, context, navController)
                 resendbuttonClick.value = false
             }
 
@@ -106,10 +116,16 @@ fun Otp(phonenumber: String, verificationcode: String, token: String, name: Stri
 
         if (submitButtonStatus.value) {
 
-            val credential: PhoneAuthCredential =
-                PhoneAuthProvider.getCredential(verificationcode, otpCode.value)
 
-           SignIn(credential, navController, name)
+            if (otpCode.value.isEmpty()) {
+
+                Toast.makeText(context, "Invalid input.", Toast.LENGTH_SHORT).show()
+            } else {
+                val credential: PhoneAuthCredential =
+                    PhoneAuthProvider.getCredential(verificationcode, otpCode.value)
+                SignIn(credential, navController, name)
+            }
+
 
         }
 
@@ -132,6 +148,7 @@ fun SignIn(credential: PhoneAuthCredential, navController: NavController, name: 
     val scope = rememberCoroutineScope()
     val dataStore = userPreference(LocalContext.current)
     val db = FirebaseFirestore.getInstance()
+    val context = LocalContext.current
     auth.signInWithCredential(credential).addOnSuccessListener {
 
         val phoneNumber = auth.currentUser!!.phoneNumber
@@ -151,82 +168,21 @@ fun SignIn(credential: PhoneAuthCredential, navController: NavController, name: 
                 scope.launch {
                     dataStore.saveLoginStatus("loggedIn")
                 }
+                Toast.makeText(context, "SigIn Success", Toast.LENGTH_SHORT).show()
                 navController.navigate("home")
                 Log.d("tag", "SigIn Success")
             }
 
             .addOnFailureListener {
                 errorToast.value = true
+              //  Toast.makeText(context, "SigIn failed", Toast.LENGTH_SHORT).show()
             }
 
 
     }.addOnFailureListener {
-
-            errorToast.value = true
-        }
-
-    if (errorToast.value) {
-        Toast.makeText(LocalContext.current, "", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "SigIn failed", Toast.LENGTH_SHORT).show()
+        errorToast.value = true
     }
 
 
-}
-
-@SuppressLint("RestrictedApi")
-@Composable
-fun ResendOtpCode(phonenumber: String, name: String, navController: NavController) {
-    lateinit var callBacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
-    val errorToast = remember {
-        mutableStateOf(false)
-    }
-
-    val sendOptToast = remember {
-        mutableStateOf(false)
-    }
-    callBacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-        override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-            Log.d("GFG", "onVerificationCompleted Success")
-            sendOptToast.value = true
-
-        }
-
-        override fun onVerificationFailed(e: FirebaseException) {
-
-            errorToast.value = true
-            Log.d("GFG", "onVerificationFailed $e")
-
-
-        }
-
-        override fun onCodeSent(
-            VerificationId: String,
-            token: com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
-        ) {
-
-            super.onCodeSent(VerificationId, token)
-            val ide = VerificationId
-            val token = token
-             navController.navigate("otp/${phonenumber}/$ide/$token/${name}")
-
-
-        }
-    }
-    if (errorToast.value) {
-        Toast.makeText(LocalContext.current, "Invalid phone number", Toast.LENGTH_SHORT).show()
-        sendOptToast.value = false
-    }
-    if (sendOptToast.value) {
-        Toast.makeText(LocalContext.current, "An sms is sent to ${phonenumber}", Toast.LENGTH_SHORT)
-            .show()
-        sendOptToast.value = false
-    }
-
-    val auth = Firebase.auth
-    val options =
-        PhoneAuthOptions.newBuilder(auth).setPhoneNumber(phonenumber) // Phone number to verify
-            .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS) // Timeout and unit
-            .setActivity(ContextUtils.getActivity(LocalContext.current)!!)// Activity (for callback binding)
-            .setCallbacks(callBacks) // OnVerificationStateChangedCallbacks
-            .build()
-    PhoneAuthProvider.verifyPhoneNumber(options)
 }

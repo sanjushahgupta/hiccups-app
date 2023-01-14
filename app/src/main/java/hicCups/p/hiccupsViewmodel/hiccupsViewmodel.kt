@@ -21,8 +21,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
+import com.google.android.material.internal.ContextUtils
+import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import hicCups.p.forNotification.HiccupsDetails
 import hicCups.p.forNotification.NotificationClient
 import hicCups.p.forNotification.NotificationData
@@ -52,9 +60,9 @@ class hiccupsViewmodel : ViewModel() {
 
                 db.collection("users").document(receiverPhoneNumber).get().addOnSuccessListener {
                     if (it.exists()) {
-                        var receiveruid = it.get("uid").toString()
+                        val receiveruid = it.get("uid").toString()
                             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-                        var ReceiverName = it.get("name").toString()
+                        val ReceiverName = it.get("name").toString()
                             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
                         Log.d("receiveruid", receiveruid)
@@ -82,7 +90,7 @@ class hiccupsViewmodel : ViewModel() {
                                         )
 
                                     } else {
-                                        Toast.makeText(context, "hvbj", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Something went wrong. Try again !!", Toast.LENGTH_SHORT).show()
 
                                     }
 
@@ -127,13 +135,12 @@ class hiccupsViewmodel : ViewModel() {
     }
 
 
-
     @SuppressLint("CoroutineCreationDuringComposition", "MutableCollectionMutableState")
     @Composable
     fun FetchSenderDataFromFireBaseDB() {
 
-        var senderList = mutableListOf<String>("")
-        var senderListState = remember { mutableStateOf(mutableListOf("")) }
+        val senderList = mutableListOf<String>("")
+        val senderListState = remember { mutableStateOf(mutableListOf("")) }
 
         val db = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
@@ -145,8 +152,8 @@ class hiccupsViewmodel : ViewModel() {
                     if (it.get("sender").toString().equals(phon.toString())) {
 
 
-                        var y = it.get("receiver")
-                        var receiver_name = it.get("receiverName").toString()
+                        val y = it.get("receiver")
+                        val receiver_name = it.get("receiverName").toString()
                             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                         var dateTime = it.get("dateandTime").toString()
                         dateTime = dateTime.substring(0, 10) + "  " + dateTime.subSequence(11, 19)
@@ -207,8 +214,8 @@ class hiccupsViewmodel : ViewModel() {
     @SuppressLint("CoroutineCreationDuringComposition")
     @Composable
     fun ReceivedDetailsListFromFirebaseDB() {
-        var receiverList = mutableListOf<String>()
-        var receiverListState = remember { mutableStateOf(mutableListOf("")) }
+        val receiverList = mutableListOf<String>()
+        val receiverListState = remember { mutableStateOf(mutableListOf("")) }
 
         val db = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
@@ -218,9 +225,9 @@ class hiccupsViewmodel : ViewModel() {
                 it.documents.forEach {
 
                     if (it.get("receiver").toString().equals(phon.toString())) {
-                        var number = it.get("sender").toString()
-                        var dateTime = it.get("dateandTime").toString()
-                        var senderName = it.get("senderName").toString()
+                        val number = it.get("sender").toString()
+                        val dateTime = it.get("dateandTime").toString()
+                        val senderName = it.get("senderName").toString()
 
                         receiverList.add(
                             number + " (" + senderName + ")" + "\n" + dateTime.substring(
@@ -265,6 +272,56 @@ class hiccupsViewmodel : ViewModel() {
 
             }
             Spacer(modifier = Modifier.padding(top = 15.dp))
+        }
+    }
+
+
+    @SuppressLint("RestrictedApi")
+    fun generateOtpCodeForSignUp(
+        phoneNumber: String, name: String, context: Context, navController: NavController
+    ) {
+
+        lateinit var callBacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
+        CoroutineScope(Dispatchers.IO).launch {
+            callBacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                    Log.d("GFG", "onVerificationCompleted Success")
+
+                }
+
+                override fun onVerificationFailed(e: FirebaseException) {
+
+                    Log.d("GFG", "onVerificationFailed $e")
+
+
+                }
+
+                override fun onCodeSent(
+                    VerificationId: String,
+                    token: com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
+                ) {
+
+                    super.onCodeSent(VerificationId, token)
+                    val ide = VerificationId
+                    val token = token
+                    Toast.makeText(
+                        context, "An sms is sent to ${phoneNumber}", Toast.LENGTH_SHORT
+                    ).show()
+                    navController.navigate("otp/${phoneNumber}/$ide/$token/${name}")
+
+
+                }
+            }
+
+            val auth = Firebase.auth
+            val options = PhoneAuthOptions.newBuilder(auth)
+                .setPhoneNumber(phoneNumber) // Phone number to verify
+                .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS) // Timeout and unit
+                .setActivity(ContextUtils.getActivity(context)!!)// Activity (for callback binding)
+                .setCallbacks(callBacks) // OnVerificationStateChangedCallbacks
+                .build()
+            PhoneAuthProvider.verifyPhoneNumber(options)
+
         }
     }
 
