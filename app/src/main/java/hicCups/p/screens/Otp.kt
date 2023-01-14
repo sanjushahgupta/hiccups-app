@@ -16,11 +16,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.auth.PhoneAuthCredential
@@ -40,149 +42,159 @@ import kotlinx.coroutines.launch
     "SuspiciousIndentation"
 )
 
-@Composable
-fun Otp(
-    phonenumber: String,
-    verificationcode: String,
-    token: String,
-    name: String,
-    navController: NavController
-) {
 
-    val otpCode = remember { mutableStateOf("") }
-    val submitButtonStatus = remember { mutableStateOf(false) }
-    val focus = LocalFocusManager.current
-    val resendbuttonClick = remember { mutableStateOf(false) }
-    val hiccupsViewmodel = hiccupsViewmodel()
-    val context = LocalContext.current
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Blue)
-            .clickable(
-                MutableInteractionSource(),
-                indication = null,
-                onClick = { focus.clearFocus() })
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(bottom = 18.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    @Composable
+    fun Otp(
+        phonenumber: String,
+        verificationcode: String,
+        token: String,
+        name: String,
+        navController: NavController
     ) {
 
-        OutlinedTextField(
-            value = otpCode.value,
-            onValueChange = { otpCode.value = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            placeholder = { Text(text = "Enter otp code") },
-            colors = TextFieldDefaults.textFieldColors(
-                cursorColor = Color.Black,
-                backgroundColor = Color.White,
-                focusedIndicatorColor = Color.LightGray
-            ),
-            modifier = Modifier.padding(bottom = 20.dp)
+        val otpCode = remember { mutableStateOf("") }
+        val submitButtonStatus = remember { mutableStateOf(false) }
+        val focus = LocalFocusManager.current
+        val resendbuttonClick = remember { mutableStateOf(false) }
+        val hiccupsViewmodel = hiccupsViewmodel()
+        val context = LocalContext.current
 
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Blue)
+                .clickable(
+                    MutableInteractionSource(),
+                    indication = null,
+                    onClick = { focus.clearFocus() })
+                .fillMaxSize()
+                .background(Color.White),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        )
-
-        Row(horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
-                onClick = {
-                    submitButtonStatus.value = true
-                    focus.clearFocus()
-                },
-                colors = ButtonDefaults.buttonColors(Color.White)
-            ) {
-                Text("Submit Opt", color = colorResource(id = R.color.LogiTint))
-            }
-
-            Spacer(modifier = Modifier.padding(8.dp))
-
-            Text("Resend verification code",
-                fontWeight = FontWeight.Bold,
-                color = Color.DarkGray,
-                modifier = Modifier
-                    .padding(bottom = 12.dp, top = 8.dp)
-                    .clickable(onClick = { resendbuttonClick.value = true })
+           Row() {
+               Text(text = "Verification code is sent to ",modifier = Modifier.padding(top = 40.dp, start = 18.dp))
+               Text(text = phonenumber, fontWeight = FontWeight.Bold,modifier = Modifier.padding(top = 40.dp))
+           }
+            OutlinedTextField(
+                value = otpCode.value,
+                onValueChange = { otpCode.value = it },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                placeholder = { Text(text = "Enter otp code") },
+                colors = TextFieldDefaults.textFieldColors(
+                    cursorColor = Color.Black,
+                    backgroundColor = Color.White,
+                    focusedIndicatorColor = Color.LightGray
+                ),
+                modifier = Modifier.padding(top = 15.dp, start = 20.dp, end = 15.dp)
             )
-            if (resendbuttonClick.value) {
-                hiccupsViewmodel.generateOtpCodeForSignUp(phonenumber, name, context, navController)
-                resendbuttonClick.value = false
-            }
 
-        }
-
-
-        if (submitButtonStatus.value) {
-
-
-            if (otpCode.value.isEmpty()) {
-
-                Toast.makeText(context, "Invalid input.", Toast.LENGTH_SHORT).show()
-            } else {
-                val credential: PhoneAuthCredential =
-                    PhoneAuthProvider.getCredential(verificationcode, otpCode.value)
-                SignIn(credential, navController, name)
-            }
-
-
-        }
-
-    }
-}
-
-
-@SuppressLint(
-    "UnusedMaterialScaffoldPaddingParameter",
-    "CoroutineCreationDuringComposition",
-    "SuspiciousIndentation"
-)
-@Composable
-fun SignIn(credential: PhoneAuthCredential, navController: NavController, name: String) {
-
-    val auth = Firebase.auth
-    val errorToast = remember {
-        mutableStateOf(false)
-    }
-    val scope = rememberCoroutineScope()
-    val dataStore = userPreference(LocalContext.current)
-    val db = FirebaseFirestore.getInstance()
-    val context = LocalContext.current
-    auth.signInWithCredential(credential).addOnSuccessListener {
-
-        val phoneNumber = auth.currentUser!!.phoneNumber
-        val uid = auth.currentUser!!.uid
-        val user: MutableMap<String, Any> = HashMap()
-        name[0].uppercase()
-        user["uid"] = uid
-        user["phonenumber"] = phoneNumber.toString()
-        user["name"] = name
-
-
-        db.collection("users").document(phoneNumber.toString())
-            .set(user(uid, phoneNumber.toString(), name))
-            .addOnSuccessListener { documentReference ->
-
-
-                scope.launch {
-                    dataStore.saveLoginStatus("loggedIn")
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Button(
+                    onClick = {
+                        submitButtonStatus.value = true
+                        focus.clearFocus()
+                    },
+                    colors = ButtonDefaults.buttonColors(Color.White),
+                    modifier = Modifier.padding(top = 15.dp, start = 18.dp)
+                ) {
+                    Text("Submit Otp", color = colorResource(id = R.color.LogiTint))
                 }
-                Toast.makeText(context, "SigIn Success", Toast.LENGTH_SHORT).show()
-                navController.navigate("home")
-                Log.d("tag", "SigIn Success")
+
+
+                Text(
+                    "   Resend verification code",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.DarkGray,
+                    modifier = Modifier
+                        .padding(top = 28.dp,)
+                        .clickable(onClick = { resendbuttonClick.value = true })
+                )
+                if (resendbuttonClick.value) {
+                    hiccupsViewmodel.generateOtpCodeForSignUp(
+                        phonenumber,
+                        name,
+                        context,
+                        navController
+                    )
+                    resendbuttonClick.value = false
+                }
+
             }
 
-            .addOnFailureListener {
-                errorToast.value = true
-              //  Toast.makeText(context, "SigIn failed", Toast.LENGTH_SHORT).show()
+
+            if (submitButtonStatus.value) {
+
+
+                if (otpCode.value.isEmpty()) {
+
+                    Toast.makeText(context, "Invalid input.", Toast.LENGTH_SHORT).show()
+                } else {
+                    val credential: PhoneAuthCredential =
+                        PhoneAuthProvider.getCredential(verificationcode, otpCode.value)
+                    SignIn(credential, navController, name)
+                }
+
+
             }
 
-
-    }.addOnFailureListener {
-        Toast.makeText(context, "SigIn failed", Toast.LENGTH_SHORT).show()
-        errorToast.value = true
+        }
     }
 
 
-}
+    @SuppressLint(
+        "UnusedMaterialScaffoldPaddingParameter",
+        "CoroutineCreationDuringComposition",
+        "SuspiciousIndentation"
+    )
+    @Composable
+    fun SignIn(credential: PhoneAuthCredential, navController: NavController, name: String) {
+
+        val auth = Firebase.auth
+        val errorToast = remember {
+            mutableStateOf(false)
+        }
+        val scope = rememberCoroutineScope()
+        val dataStore = userPreference(LocalContext.current)
+        val db = FirebaseFirestore.getInstance()
+        val context = LocalContext.current
+        auth.signInWithCredential(credential).addOnSuccessListener {
+
+            val phoneNumber = auth.currentUser!!.phoneNumber
+            val uid = auth.currentUser!!.uid
+            val user: MutableMap<String, Any> = HashMap()
+            name[0].uppercase()
+            user["uid"] = uid
+            user["phonenumber"] = phoneNumber.toString()
+            user["name"] = name
+
+
+            db.collection("users").document(phoneNumber.toString())
+                .set(user(uid, phoneNumber.toString(), name))
+                .addOnSuccessListener { documentReference ->
+
+
+                    scope.launch {
+                        dataStore.saveLoginStatus("loggedIn")
+                    }
+                    Toast.makeText(context, "SigIn Success", Toast.LENGTH_SHORT).show()
+                    navController.navigate("home")
+                    Log.d("tag", "SigIn Success")
+                }
+
+                .addOnFailureListener {
+                    errorToast.value = true
+                    //  Toast.makeText(context, "SigIn failed", Toast.LENGTH_SHORT).show()
+                }
+
+
+        }.addOnFailureListener {
+          //  Toast.makeText(context, "SigIn failed", Toast.LENGTH_SHORT).show()
+            errorToast.value = true
+        }
+
+
+    }

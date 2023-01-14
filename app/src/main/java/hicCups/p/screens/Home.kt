@@ -109,7 +109,7 @@ fun Home(navController: NavController) {
 
 
             Text(
-                "Are you missing anyone?",
+                "Missing someone?",
                 fontSize = 18.sp,
                 modifier = Modifier.padding(top = 30.dp, start = 20.dp),
                 color = colorResource(id = R.color.LogiTint)
@@ -219,7 +219,7 @@ fun UIWithContact() {
         colors = TextFieldDefaults.textFieldColors(cursorColor = Color.Black, backgroundColor = Color.White, focusedIndicatorColor = Color.LightGray),
         placeholder = {
             Text(
-                text = "Enter Phone number", color = colorResource(id = R.color.LogiTint)
+                text = "Enter phone number", color = colorResource(id = R.color.LogiTint)
             )
         },
         modifier = Modifier.fillMaxWidth()
@@ -253,7 +253,7 @@ fun UIWithContact() {
 
             if (phoneNumber.value == senderPhone) {
                 Toast.makeText(
-                    LocalContext.current, "You cannot send yourself hiccups.", Toast.LENGTH_SHORT
+                    LocalContext.current, "You cannot send yourself hiccup.", Toast.LENGTH_SHORT
                 ).show()
                 send.value = false
             } else {

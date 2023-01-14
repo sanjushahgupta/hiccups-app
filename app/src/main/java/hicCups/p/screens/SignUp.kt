@@ -167,7 +167,7 @@ fun SignUp(navController: NavController) {
                     }
 
                     if (SignInButtonStatus.value) {
-                        if (phoneNumber.value.isEmpty()) {
+                        if (phoneNumber.value.isEmpty() || name.value.isEmpty()) {
 
                             Toast.makeText(
                                 context, "Please enter your phone number.", Toast.LENGTH_SHORT

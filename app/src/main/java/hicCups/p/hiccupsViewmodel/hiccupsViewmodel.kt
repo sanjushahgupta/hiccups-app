@@ -8,7 +8,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +34,7 @@ import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import hicCups.p.R
 import hicCups.p.forNotification.HiccupsDetails
 import hicCups.p.forNotification.NotificationClient
 import hicCups.p.forNotification.NotificationData
@@ -90,7 +94,11 @@ class hiccupsViewmodel : ViewModel() {
                                         )
 
                                     } else {
-                                        Toast.makeText(context, "Something went wrong. Try again !!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Something went wrong. Try again !!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
 
                                     }
 
@@ -135,13 +143,21 @@ class hiccupsViewmodel : ViewModel() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("CoroutineCreationDuringComposition", "MutableCollectionMutableState")
     @Composable
     fun FetchSenderDataFromFireBaseDB() {
 
-        val senderList = mutableListOf<String>("")
-        val senderListState = remember { mutableStateOf(mutableListOf("")) }
-
+        val senderNameList = mutableListOf<String>("")
+        val senderPhoneNumberList = mutableListOf<String>("")
+        val senderDateTimeList = mutableListOf<String>("")
+        val senderNameListState = remember { mutableStateOf(mutableListOf("")) }
+        val senderPhoneNumberListState = remember { mutableStateOf(mutableListOf("")) }
+        val senderDateTimeListState = remember { mutableStateOf(mutableListOf("")) }
+        val context = LocalContext.current
+        var sendAgainBtn = remember {
+            mutableStateOf(false)
+        }
         val db = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
         val phon = auth.currentUser?.phoneNumber
@@ -152,16 +168,20 @@ class hiccupsViewmodel : ViewModel() {
                     if (it.get("sender").toString().equals(phon.toString())) {
 
 
-                        val y = it.get("receiver")
+                        val receiverph = it.get("receiver").toString()
                         val receiver_name = it.get("receiverName").toString()
                             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                         var dateTime = it.get("dateandTime").toString()
                         dateTime = dateTime.substring(0, 10) + "  " + dateTime.subSequence(11, 19)
 
-                        senderList.add("  " + y.toString() + " (" + receiver_name + ")" + "\n" + "  " + dateTime)
+                        senderNameList.add(receiver_name)
+                        senderPhoneNumberList.add(receiverph)
+                        senderDateTimeList.add(dateTime)
 
                     }
-                    senderListState.value = senderList
+                    senderDateTimeListState.value = senderDateTimeList
+                    senderNameListState.value = senderNameList
+                    senderPhoneNumberListState.value = senderPhoneNumberList
                 }
 
             }
@@ -169,7 +189,8 @@ class hiccupsViewmodel : ViewModel() {
 
         Column {
 
-            if (senderListState.value.size == 1) {
+            val sizeOfList = senderNameListState.value.size
+            if (sizeOfList == 1) {
                 Spacer(modifier = Modifier.padding(top = 70.dp))
 
                 Text(
@@ -181,41 +202,74 @@ class hiccupsViewmodel : ViewModel() {
             } else {
 
                 Text(
-                    text = "Sent hiccups: ",
+                    text = "Sent hiccups",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(top = 10.dp, start = 10.dp, bottom = 3.dp)
+                    modifier = Modifier.padding(top = 10.dp, start = 10.dp, bottom = 10.dp)
                 )
-            }
-        }
 
-        LazyColumn(
-            Modifier.fillMaxWidth()
-        ) {
-            items(senderListState.value) { it ->
 
-                if (it.isNotEmpty()) {
-                    Text(
-                        text = it, modifier = Modifier.padding(start = 5.dp, bottom = 8.dp)
-                    )
-                    Divider()
+
+                LazyColumn(
+                    Modifier.fillMaxWidth()
+                ) {
+                    items(sizeOfList) { it ->
+                        if (it > 1) {
+                            Row {
+
+                                val name = senderNameListState.value[it]
+                                val ph = senderPhoneNumberListState.value[it]
+                                val dateTime = senderDateTimeListState.value[it]
+                                Column {
+                                    Text(
+                                        "$name, $ph",
+                                        modifier = Modifier.padding(start = 18.dp, top = 15.dp)
+                                    )
+                                    Text(
+                                        dateTime,
+                                        modifier = Modifier.padding(start = 18.dp, bottom = 10.dp),
+                                        color = Color.Gray
+                                    )
+                                }
+                                Button(
+                                    onClick = { sendAgainBtn.value = true },
+                                    modifier = Modifier.padding(
+                                        start = 18.dp, top = 7.dp, bottom = 10.dp
+                                    ),
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                                ) {
+                                    Text("Send Again", color = colorResource(id = R.color.LogiTint))
+                                }
+
+                                if (sendAgainBtn.value) {
+                                    sendHiccups(ph, context)
+                                    sendAgainBtn.value = false
+                                }
+
+                            }
+                            Divider()
+                        }
+                    }
+
 
                 }
-
-                Spacer(modifier = Modifier.padding(5.dp))
-
             }
-
         }
-
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("CoroutineCreationDuringComposition")
     @Composable
     fun ReceivedDetailsListFromFirebaseDB() {
-        val receiverList = mutableListOf<String>()
-        val receiverListState = remember { mutableStateOf(mutableListOf("")) }
+        val receiverNameList = mutableListOf<String>()
+        val receiverNameListState = remember { mutableStateOf(mutableListOf("")) }
+        val receiverPhoneNumberList = mutableListOf<String>()
+        val receiverPhoneNumberListState = remember { mutableStateOf(mutableListOf("")) }
+        val receiverDateTimeList = mutableListOf<String>()
+        val receiverDateTimeListState = remember { mutableStateOf(mutableListOf("")) }
+        val context = LocalContext.current
+
 
         val db = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
@@ -229,19 +283,26 @@ class hiccupsViewmodel : ViewModel() {
                         val dateTime = it.get("dateandTime").toString()
                         val senderName = it.get("senderName").toString()
 
-                        receiverList.add(
-                            number + " (" + senderName + ")" + "\n" + dateTime.substring(
+                        receiverNameList.add(senderName)
+                        receiverPhoneNumberList.add(number)
+                        receiverDateTimeList.add(
+                            dateTime.substring(
                                 0, 10
                             ) + "  " + dateTime.substring(11, 19)
                         )
+
+
                     }
 
                 }
-                receiverListState.value = receiverList
+
+                receiverNameListState.value = receiverNameList
+                receiverPhoneNumberListState.value = receiverPhoneNumberList
+                receiverDateTimeListState.value = receiverDateTimeList
             }
         }
 
-        if (receiverListState.value.size == 0) {
+        if (receiverPhoneNumberListState.value.size == 0) {
             Spacer(modifier = Modifier.padding(top = 100.dp))
             Box(contentAlignment = Alignment.Center) {
                 Text(
@@ -255,17 +316,43 @@ class hiccupsViewmodel : ViewModel() {
         } else {
             Spacer(modifier = Modifier.padding(top = 30.dp))
             Text(
-                "Received hiccups: ",
+                "Received hiccups",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 13.dp)
             )
+            var sendbytap = remember {
+                mutableStateOf(false)
+            }
             LazyColumn(
                 Modifier.fillMaxWidth()
             ) {
-                items(receiverListState.value) { it ->
-                    if (it.isNotEmpty()) {
-                        Text("$it", modifier = Modifier.padding(top = 10.dp, bottom = 10.dp))
+                var sizeOfList = receiverPhoneNumberListState.value.size
+                items(sizeOfList) { it ->
+                    Row {
+                        var phoneNumber = receiverPhoneNumberListState.value[it]
+                        val name = receiverNameListState.value[it]
+                        val dateTime = receiverDateTimeListState.value[it]
+                        Column {
+                            Text("$name, $phoneNumber", modifier = Modifier.padding(top = 15.dp))
+                            Text(
+                                "$dateTime",
+                                modifier = Modifier.padding(bottom = 10.dp),
+                                color = Color.Gray
+                            )
+                        }
+                        Button(
+                            onClick = { sendbytap.value = true },
+                            modifier = Modifier.padding(start = 18.dp, top = 7.dp, bottom = 10.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                        ) {
+                            Text("Send Hiccup", color = colorResource(id = R.color.LogiTint))
+                        }
+                        if (sendbytap.value) {
+
+                            sendHiccups(phoneNumber, context)
+                            sendbytap.value = false
+                        }
                     }
                     Divider()
                 }
@@ -304,9 +391,6 @@ class hiccupsViewmodel : ViewModel() {
                     super.onCodeSent(VerificationId, token)
                     val ide = VerificationId
                     val token = token
-                    Toast.makeText(
-                        context, "An sms is sent to ${phoneNumber}", Toast.LENGTH_SHORT
-                    ).show()
                     navController.navigate("otp/${phoneNumber}/$ide/$token/${name}")
 
 
