@@ -252,9 +252,7 @@ fun UIWithContact() {
             phoneNumber.value = phoneNumber.value.replace("\\s".toRegex(), "")
 
             if (phoneNumber.value == senderPhone) {
-                Toast.makeText(
-                    LocalContext.current, "You cannot send yourself hiccup.", Toast.LENGTH_SHORT
-                ).show()
+                hiccupsViewmodel.sendHiccups(phoneNumber.value, context)
                 send.value = false
             } else {
 

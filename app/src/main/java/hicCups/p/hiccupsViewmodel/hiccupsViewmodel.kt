@@ -59,15 +59,15 @@ class hiccupsViewmodel : ViewModel() {
                 var senderName = ""
                 if (it.exists()) {
                     senderName = it.get("name").toString()
-                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
                 }
 
                 db.collection("users").document(receiverPhoneNumber).get().addOnSuccessListener {
                     if (it.exists()) {
                         val receiveruid = it.get("uid").toString()
-                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
                         val ReceiverName = it.get("name").toString()
-                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
 
                         Log.d("receiveruid", receiveruid)
 
@@ -170,7 +170,6 @@ class hiccupsViewmodel : ViewModel() {
 
                         val receiverph = it.get("receiver").toString()
                         val receiver_name = it.get("receiverName").toString()
-                            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
                         var dateTime = it.get("dateandTime").toString()
                         dateTime = dateTime.substring(0, 10) + "  " + dateTime.subSequence(11, 19)
 
