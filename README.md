@@ -5,7 +5,7 @@ An app for sending hiccups to other registered users.
 
 - [Overview](#overview)
   - [Screenshot](#screenshot)
-  - [Links](#links)
+  - [Link](#link)
 - [Built with](#built-with)
 - [Feedback ](#feedback)
 
@@ -15,7 +15,7 @@ An app for sending hiccups to other registered users.
 ![hiccups](https://github.com/sanjushahgupta/hiccups-app/assets/71315276/037ecbd2-158a-4d80-8ab9-fb16b3c3b7ed)
 
 
-### Links
+### Link
 - https://github.com/sanjushahgupta/hiccups-app
 
 ## Built with
@@ -26,5 +26,5 @@ An app for sending hiccups to other registered users.
 - Navigation
 
 
-## Feedback ![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)
+## Feedback![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)
 If you have any feedback, please reach out to me at sanjushahgupta@gmail.com
