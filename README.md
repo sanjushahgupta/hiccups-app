@@ -12,7 +12,7 @@ An app for sending hiccups to other registered users.
 ## OverView
 
 ### Screenshot
-![hiccups](https://github.com/sanjushahgupta/hiccups-app/assets/71315276/037ecbd2-158a-4d80-8ab9-fb16b3c3b7ed)
+<img width="200" alt="Screenshot 2023-06-24 at 17 35 33" src="https://github.com/sanjushahgupta/hiccups-app/assets/71315276/a7d67ce6-bdaa-4a01-9fe9-b4c1eea04d28">
 
 
 ### Link
